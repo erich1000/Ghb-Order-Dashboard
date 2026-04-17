@@ -13,13 +13,27 @@ else:
     st.error("Bitte GOOGLE_API_KEY in den Streamlit-Secrets hinterlegen!")
 
 def parse_sms_with_gemini(sms_text):
-    model = genai.GenerativeModel('models/gemini-1.5-flash')
-    prompt = f"Extrahiere Daten aus dieser SMS: '{sms_text}'. Gib NUR JSON zurück mit den Feldern: typ, datum, schicht, ort, zeit, rolle."
+    # Wir nutzen hier den Standardnamen
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    
+    prompt = f"""
+    Analysiere diese SMS: '{sms_text}'
+    Extrahiere die Infos und antworte NUR mit einem validen JSON-Objekt.
+    Format: {{"typ": "Order", "datum": "YYYY-MM-DD", "schicht": "1", "ort": "Ort", "zeit": "HH:mm-HH:mm", "rolle": "Beruf"}}
+    """
+    
     response = model.generate_content(prompt)
-    # Entfernt evtl. Markdown-Formatierung aus der Antwort
-    clean_json = response.text.replace('```json', '').replace('```', '').strip()
+    
+    # Sicherstellen, dass wir nur das JSON bekommen, auch wenn Gemini Text drumherum baut
+    text_response = response.text
+    if "{" in text_response and "}" in text_response:
+        start = text_response.find("{")
+        end = text_response.rfind("}") + 1
+        clean_json = text_response[start:end]
+    else:
+        clean_json = text_response
+        
     return json.loads(clean_json)
-
 st.title("⚓ Mein Schicht-Dashboard")
 
 if 'orders' not in st.session_state:
