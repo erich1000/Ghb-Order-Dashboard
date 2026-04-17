@@ -13,7 +13,7 @@ else:
     st.error("Bitte GOOGLE_API_KEY in den Streamlit-Secrets hinterlegen!")
 
 def parse_sms_with_gemini(sms_text):
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+model = genai.GenerativeModel('models/gemini-1.5-flash')
     prompt = f"Extrahiere Daten aus dieser SMS: '{sms_text}'. Gib NUR JSON zurück mit den Feldern: typ, datum, schicht, ort, zeit, rolle."
     response = model.generate_content(prompt)
     # Entfernt evtl. Markdown-Formatierung aus der Antwort
